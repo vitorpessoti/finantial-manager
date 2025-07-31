@@ -1,59 +1,72 @@
-import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
-import createError from "http-errors";
-import {
-    getGenerations,
-    buildWorkbook,
-    buildGenerationsRelationship,
-    outOfPatternPlayers
-} from "../utils/team-generations.util.js";
-import httpStatus from "http-status";
+import TransactionsRepository from '../repositories/transactions.repository.js';
+import httpStatus from 'http-status';
+import createError from 'http-errors';
+import { Constants } from '../utils/constants.util.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+export default class TransactionsService {
+    constructor() {
+        this.repository = new TransactionsRepository();
+    }
 
-class TeamGenerationsService {
-    async buildGenerations(body) {
+    async createTransaction(data) {
         try {
-            const team = body.team.replace(/ /g, "_").toUpperCase();
-            const fileName = `players_${team}.json`;
-            const inputFilePath = path.resolve(__dirname, "..", "..", "data-output", fileName);
-            const rawTeamPlayersData = fs.readFileSync(inputFilePath, "utf8").toString();
-            const outputFilePath = path.resolve(__dirname, "..", "..", "data-output", `players_${team}.xlsx`);
-            const teamPlayers = JSON.parse(rawTeamPlayersData);
-            const generations = getGenerations(teamPlayers);
-            const generationsCompare = [];
-            const playersOutOfPattern = outOfPatternPlayers(teamPlayers).map(player => ({
-                nome: player.nome,
-                numero: player.numero,
-                idadeAtual: player.idadeAtual,
-                idadeFimDoMes: player.idadeFimDoMes
-            }));
-
-            buildGenerationsRelationship(team, generations, generationsCompare);
-
-            const workbook = buildWorkbook(generationsCompare);
-
-            await workbook.xlsx.writeFile(outputFilePath)
-                .then(() => {
-                    console.log(`File saved as ${outputFilePath}`);
-                })
-                .catch(error => {
-                    console.error("Error saving the file:", error);
-                    throw error;
-                });
-
+            const isoDate = new Date(data.date).toISOString();
+            const createdTransaction = await this.repository.create({
+                ...data,
+                date: isoDate
+            });
             return {
-                team,
-                hasPlayersOutOfPattern: playersOutOfPattern.length > 0,
-                playersOutOfPattern,
+                message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.CREATED,
+                data: createdTransaction
             };
         } catch (error) {
-            throw createError(httpStatus.BAD_REQUEST, error.message || 'Houve um problema ao gerar a escadinha do seu time.');
+            throw createError(httpStatus.BAD_REQUEST, error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT);
+        }
+    }
+
+    async listTransactionsByUser(userId) {
+        return this.repository.findAllByUserId(userId);
+    }
+
+    async getTransactionById(id) {
+        return this.repository.findById(id);
+    }
+
+    async deleteTransaction(id) {
+        try {
+            const existingTransaction = await this.repository.findById(id);
+            if (!existingTransaction)
+                throw createError(httpStatus.NOT_FOUND, Constants.MESSAGES.ERROR.TRANSACTIONS.NOT_FOUND);
+
+            const deletedTransaction = await this.repository.delete(id)
+            return {
+                message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.DELETED,
+                data: deletedTransaction
+            };
+        } catch (error) {
+            throw createError(
+                error.status || httpStatus.BAD_REQUEST,
+                error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
+            );
+        }
+    }
+
+    async updateTransaction(id, data) {
+        try {
+            const existingTransaction = await this.repository.findById(id);
+            if (!existingTransaction)
+                throw createError(httpStatus.NOT_FOUND, Constants.MESSAGES.ERROR.TRANSACTIONS.NOT_FOUND);
+
+            const updatedTransaction = await this.repository.update(id, data);
+            return {
+                message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.UPDATED,
+                data: updatedTransaction
+            };
+        } catch (error) {
+            throw createError(
+                error.status || httpStatus.BAD_REQUEST,
+                error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
+            );
         }
     }
 }
-
-export default TeamGenerationsService;

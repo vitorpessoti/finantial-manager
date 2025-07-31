@@ -1,24 +1,54 @@
 import express from "express";
 import httpStatus from "http-status";
-import TeamGenerationsService from "../services/team-generations.service.js";
-import TeamGenerationsValidator from "../validators/team-generations.validator.js";
+import TransactionsService from "../services/transactions.service.js";
+import TransactionsValidator from "../validators/transactions.validator.js";
 import validate from "../middlewares/validate.middleware.js"; // Import validation middleware
 
 const router = express.Router();
 
 router.post(
-    "/build",
-    ...TeamGenerationsValidator.defaultValidation(),
+    "/",
+    ...TransactionsValidator.defaultValidation(),
     validate,
     async (req, res, next) => {
         try {
-            //TODO: fix excel data parsing number fields to int
-            const result = await new TeamGenerationsService().buildGenerations(req.body);
-            res.status(httpStatus.OK).json(result);
+            const result = await new TransactionsService().createTransaction(req.body);
+            res.status(httpStatus.CREATED).json(result);
         } catch (error) {
             next(error);
         }
     }
 );
+
+router.get('/:userId', async (req, res, next) => {
+    try {
+        const result = await new TransactionsService().listTransactionsByUser(req.params.userId);
+        res.status(httpStatus.OK).json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.patch(
+    '/:id',
+    ...TransactionsValidator.updateValidation(),
+    validate,
+    async (req, res, next) => {
+    try {
+        const result = await new TransactionsService().updateTransaction(req.params.id, req.body);
+        res.status(httpStatus.OK).json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.delete('/:userId', async (req, res, next) => {
+    try {
+        const result = await new TransactionsService().deleteTransaction(req.params.userId);
+        res.status(httpStatus.OK).json(result);
+    } catch (error) {
+        next(error);
+    }
+});
 
 export default router;
