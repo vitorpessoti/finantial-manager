@@ -20,7 +20,16 @@ router.post(
     }
 );
 
-router.get('/:userId', async (req, res, next) => {
+router.get('/:id', async (req, res, next) => {
+    try {
+        const result = await new TransactionsService().getTransactionById(req.params.id);
+        res.status(httpStatus.OK).json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.get('/users/:userId', async (req, res, next) => {
     try {
         const result = await new TransactionsService().listTransactionsByUser(req.params.userId);
         res.status(httpStatus.OK).json(result);

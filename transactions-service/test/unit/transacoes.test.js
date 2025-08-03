@@ -172,7 +172,7 @@ describe('Transactions - GET /transactions', () => {
         });
 
         const response = await request(app)
-            .get(`${basePath}/transactions/${userId}`);
+            .get(`${basePath}/transactions/users/${userId}`);
 
         expect(response.status).toBe(httpStatus.OK);
         expect(response.body).toBeInstanceOf(Array);
@@ -182,7 +182,7 @@ describe('Transactions - GET /transactions', () => {
 
     it('should return an empty array if no transactions found for user ID', async () => {
         const response = await request(app)
-            .get(`${basePath}/transactions/nonexistent-user`);
+            .get(`${basePath}/transactions/users/nonexistent-user`);
 
         expect(response.status).toBe(httpStatus.OK);
         expect(response.body).toEqual([]);
@@ -310,4 +310,29 @@ describe('Transactions - DELETE /transactions/:id', () => {
         expect(response.status).toBe(httpStatus.NOT_FOUND);
         expect(response.body).toHaveProperty('error');
     });
+});
+
+describe('Transactions - GET /transactions/:id/', () => {
+    it('should retrieve a transaction by ID', async () => {
+        const transaction = await prisma.transactions.create({
+            data: {
+                userId: 'test-get-1',
+                type: 'credit',
+                description: 'Transaction to retrieve',
+                value: 200,
+                category: 'Test',
+                date: new Date()
+            }
+        });
+
+        const response = await request(app)
+            .get(`${basePath}/transactions/${transaction.id}`);
+
+
+            console.log(response.body);
+
+        expect(response.status).toBe(httpStatus.OK);
+        expect(response.body).toHaveProperty('id', transaction.id);
+        expect(response.body.description).toBe(transaction.description);
+    })
 });
