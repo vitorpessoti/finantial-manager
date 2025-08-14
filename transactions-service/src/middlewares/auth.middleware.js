@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import httpStatus from 'http-status';
-import { Constants } from '../utils/constants.util';
+import { Constants } from '../utils/constants.util.js';
 
 export function authMiddleware(req, res, next) {
   const header = req.headers.authorization;
