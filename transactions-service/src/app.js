@@ -3,12 +3,14 @@ import 'dotenv/config';
 import routes from "./routes/index.js";
 import cors from "cors";
 import httpStatus from "http-status";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:4200', credentials: true }));
 app.use(express.json());
 app.use('/', routes);
+app.use(cookieParser());
 
 app.use((err, req, res, next) => {
     res.status(err.status || httpStatus.INTERNAL_SERVER_ERROR).json({

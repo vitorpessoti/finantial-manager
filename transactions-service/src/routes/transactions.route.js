@@ -3,12 +3,14 @@ import httpStatus from "http-status";
 import TransactionsService from "../services/transactions.service.js";
 import TransactionsValidator from "../validators/transactions.validator.js";
 import validate from "../middlewares/validate.middleware.js"; // Import validation middleware
+import { authMiddleware } from "../middlewares/auth.middleware.js"; // Import authentication middleware
 
 const router = express.Router();
 
 router.post(
     "/",
     ...TransactionsValidator.defaultValidation(),
+    authMiddleware,
     validate,
     async (req, res, next) => {
         try {
@@ -20,7 +22,7 @@ router.post(
     }
 );
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', authMiddleware, async (req, res, next) => {
     try {
         const result = await new TransactionsService().getTransactionById(req.params.id);
         res.status(httpStatus.OK).json(result);
@@ -29,7 +31,7 @@ router.get('/:id', async (req, res, next) => {
     }
 });
 
-router.get('/users/:userId', async (req, res, next) => {
+router.get('/users/:userId', authMiddleware, async (req, res, next) => {
     try {
         const result = await new TransactionsService().listTransactionsByUser(req.params.userId);
         res.status(httpStatus.OK).json(result);
@@ -41,6 +43,7 @@ router.get('/users/:userId', async (req, res, next) => {
 router.patch(
     '/:id',
     ...TransactionsValidator.updateValidation(),
+    authMiddleware,
     validate,
     async (req, res, next) => {
     try {
@@ -51,7 +54,7 @@ router.patch(
     }
 });
 
-router.delete('/:userId', async (req, res, next) => {
+router.delete('/:userId', authMiddleware, async (req, res, next) => {
     try {
         const result = await new TransactionsService().deleteTransaction(req.params.userId);
         res.status(httpStatus.OK).json(result);

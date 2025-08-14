@@ -5,6 +5,10 @@ export const Constants = {
                 CREATED: "Transação criada com sucesso.",
                 UPDATED: "Transação atualizada com sucesso.",
                 DELETED: "Transação excluída com sucesso.",
+            },
+            AUTH: {
+                REGISTERED: "Usuário registrado com sucesso.",
+                LOGGED_IN: "Usuário logado com sucesso."
             }
         },
         ERROR: {
@@ -19,6 +23,10 @@ export const Constants = {
                 MISSING_VALUE: "O campo value é obrigatório.",
                 MISSING_DATE: "O campo date é obrigatório.",
                 CANNOT_UPDATE_USER_ID: "O campo userId não pode ser atualizado."
+            },
+            AUTH: {
+                INVALID_CREDENTIALS: "Credenciais inválidas.",
+                EMAIL_EXISTS: "O email já está em uso.",
             }
         }
     }
