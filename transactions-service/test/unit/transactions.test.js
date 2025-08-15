@@ -5,7 +5,6 @@ import { PrismaClient } from '@prisma/client';
 import httpStatus from 'http-status';
 import RabbitMQService from '../../src/services/rabbit-mq.service';
 import 'dotenv/config';
-import TransactionsService from '../../src/services/transactions.service';
 import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();

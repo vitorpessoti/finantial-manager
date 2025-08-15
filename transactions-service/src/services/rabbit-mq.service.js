@@ -1,5 +1,5 @@
 import amqp from 'amqplib';
-import Logger from './logger.service';
+import Logger from './logger.service.js';
 
 export default class RabbitMQ {
     constructor(connectionUrl, dateFormat, logsPath) {
