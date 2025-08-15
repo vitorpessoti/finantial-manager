@@ -2,6 +2,13 @@ import TransactionsRepository from '../repositories/transactions.repository.js';
 import httpStatus from 'http-status';
 import createError from 'http-errors';
 import { Constants } from '../utils/constants.util.js';
+import RabbitMQService from './rabbit-mq.service.js';
+import Logger from './logger.service.js';
+
+const logger = new Logger({
+    dateFormat: process.env.DATE_FORMAT,
+    logsPath: process.env.LOGS_PATH
+});
 
 export default class TransactionsService {
     constructor() {
@@ -11,15 +18,28 @@ export default class TransactionsService {
     async createTransaction(data) {
         try {
             const isoDate = new Date(data.date).toISOString();
-            const createdTransaction = await this.repository.create({
+            const transactionBody = {
                 ...data,
                 date: isoDate
-            });
+            }
+            const createdTransaction = await this.repository.create(transactionBody);
+
+            // Publish the transaction to RabbitMQ for further processing
+            const rabbitMQService = new RabbitMQService(
+                process.env.RABBITMQ_URL,
+                process.env.DATE_FORMAT,
+                process.env.LOGS_PATH
+            );
+            await rabbitMQService.connect();
+            await rabbitMQService.sendToQueue(process.env.QUEUE_PENDING_TRANSACTIONS, transactionBody);
+            logger.info(`Transaction created and sent to RabbitMQ: ${JSON.stringify(transactionBody.description)}`);
+
             return {
                 message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.CREATED,
                 data: createdTransaction
             };
         } catch (error) {
+            logger.error(`Error creating transaction: ${error.message}`);
             throw createError(httpStatus.BAD_REQUEST, error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT);
         }
     }
@@ -29,6 +49,7 @@ export default class TransactionsService {
     }
 
     async getTransactionById(id) {
+        console.log(`Fetching transaction with ID: ${id}`);
         return this.repository.findById(id);
     }
 

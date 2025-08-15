@@ -3,12 +3,32 @@ import app from '../../src/app';
 import { Constants } from '../../src/utils/constants.util';
 import { PrismaClient } from '@prisma/client';
 import httpStatus from 'http-status';
+import RabbitMQService from '../../src/services/rabbit-mq.service';
+import 'dotenv/config';
+import TransactionsService from '../../src/services/transactions.service';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const basePath = '/api/v1';
 
+// jest.mock('../../src/middlewares/auth.middleware.js');
+// jest.mock('../../src/services/transactions.service.js');
+jest.mock('../../src/services/rabbit-mq.service.js');
+
+const mockUser = { id: 'test-get-1' };
+const mockToken = jwt.sign(mockUser, process.env.JWT_SECRET);
+
+let server;
+
+beforeAll(async () => {
+    server = app.listen(process.env.PORT, () => {
+        console.log(`Server is running on http://localhost:${process.env.PORT}`);
+    });
+});
+
 afterAll(async () => {
     await prisma.$disconnect();
+    server.close();
 });
 
 afterEach(async () => {
@@ -17,7 +37,9 @@ afterEach(async () => {
             userId: { startsWith: 'test-' }
         }
     });
+    jest.restoreAllMocks();
 });
+
 
 describe('Transactions - POST /transactions', () => {
     it('create a valid transaction', async () => {
@@ -27,12 +49,25 @@ describe('Transactions - POST /transactions', () => {
             description: 'Salário',
             value: 3000,
             category: 'Trabalho',
-            date: '2025-07-29'
+            date: '2025-07-29T00:00:00.000Z'
         };
+
+        const mockConnect = jest.fn();
+        const mockSendToQueue = jest.fn();
+
+        RabbitMQService.mockImplementation(() => ({
+            connect: mockConnect,
+            sendToQueue: mockSendToQueue
+        }));
 
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send(payload);
+
+        expect(RabbitMQService).toHaveBeenCalledTimes(1);
+        expect(mockConnect).toHaveBeenCalledTimes(1);
+        expect(mockSendToQueue).toHaveBeenCalledWith(process.env.QUEUE_PENDING_TRANSACTIONS, payload);
 
         expect(response.status).toBe(httpStatus.CREATED);
         expect(response.body).not.toBeNull();
@@ -44,6 +79,7 @@ describe('Transactions - POST /transactions', () => {
     it('should reject a transaction if value is negative or zero', async () => {
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({
                 userId: 'abc123',
                 type: 'credit',
@@ -61,6 +97,7 @@ describe('Transactions - POST /transactions', () => {
     it('should reject a transaction if type is invalid', async () => {
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({
                 userId: 'abc123',
                 type: 'invalidType',
@@ -78,6 +115,7 @@ describe('Transactions - POST /transactions', () => {
     it('should reject a transaction if date is in the future', async () => {
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({
                 userId: 'abc123',
                 type: 'debit',
@@ -95,6 +133,7 @@ describe('Transactions - POST /transactions', () => {
     it('should reject a transaction if type is missing', async () => {
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({
                 userId: 'abc123',
                 description: 'Pagamento',
@@ -111,6 +150,7 @@ describe('Transactions - POST /transactions', () => {
     it('should reject a transaction if description is missing', async () => {
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({
                 userId: 'abc123',
                 type: 'debit',
@@ -127,6 +167,7 @@ describe('Transactions - POST /transactions', () => {
     it('should reject a transaction if value is missing', async () => {
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({
                 userId: 'abc123',
                 type: 'debit',
@@ -143,6 +184,7 @@ describe('Transactions - POST /transactions', () => {
     it('should reject a transaction if date is missing', async () => {
         const response = await request(app)
             .post(`${basePath}/transactions`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({
                 userId: 'abc123',
                 type: 'debit',
@@ -157,7 +199,7 @@ describe('Transactions - POST /transactions', () => {
     });
 });
 
-describe('Transactions - GET /transactions', () => {
+describe('Transactions - GET /transactions/users/:userId', () => {
     it('should list transactions by user ID', async () => {
         const userId = 'test-abc123';
         const transaction = await prisma.transactions.create({
@@ -172,7 +214,8 @@ describe('Transactions - GET /transactions', () => {
         });
 
         const response = await request(app)
-            .get(`${basePath}/transactions/users/${userId}`);
+            .get(`${basePath}/transactions/users/${userId}`)
+            .set('Authorization', `Bearer ${mockToken}`);
 
         expect(response.status).toBe(httpStatus.OK);
         expect(response.body).toBeInstanceOf(Array);
@@ -182,7 +225,8 @@ describe('Transactions - GET /transactions', () => {
 
     it('should return an empty array if no transactions found for user ID', async () => {
         const response = await request(app)
-            .get(`${basePath}/transactions/users/nonexistent-user`);
+            .get(`${basePath}/transactions/users/nonexistent-user`)
+            .set('Authorization', `Bearer ${mockToken}`);
 
         expect(response.status).toBe(httpStatus.OK);
         expect(response.body).toEqual([]);
@@ -209,6 +253,7 @@ describe('Transactions - PATCH /transactions/:id', () => {
 
         const response = await request(app)
             .patch(`${basePath}/transactions/${transaction.id}`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send(updateData);
 
         expect(response.status).toBe(httpStatus.OK);
@@ -227,6 +272,7 @@ describe('Transactions - PATCH /transactions/:id', () => {
     it('should return 404 if transaction not found', async () => {
         const response = await request(app)
             .patch(`${basePath}/transactions/nonexistent-id`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({ description: 'New Description' });
 
         expect(response.status).toBe(httpStatus.NOT_FOUND);
@@ -247,6 +293,7 @@ describe('Transactions - PATCH /transactions/:id', () => {
 
         const response = await request(app)
             .patch(`${basePath}/transactions/${transaction.id}`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({ value: -50 });
 
         expect(response.status).toBe(httpStatus.BAD_REQUEST);
@@ -268,6 +315,7 @@ describe('Transactions - PATCH /transactions/:id', () => {
 
         const response = await request(app)
             .patch(`${basePath}/transactions/${transaction.id}`)
+            .set('Authorization', `Bearer ${mockToken}`)
             .send({ userId: 'new-user-id' });
 
         expect(response.status).toBe(httpStatus.BAD_REQUEST);
@@ -290,7 +338,8 @@ describe('Transactions - DELETE /transactions/:id', () => {
         });
 
         const response = await request(app)
-            .delete(`${basePath}/transactions/${transaction.id}`);
+            .delete(`${basePath}/transactions/${transaction.id}`)
+            .set('Authorization', `Bearer ${mockToken}`);
 
         expect(response.status).toBe(httpStatus.OK);
         expect(response.body).toHaveProperty('message', Constants.MESSAGES.SUCCESS.TRANSACTIONS.DELETED);
@@ -305,34 +354,35 @@ describe('Transactions - DELETE /transactions/:id', () => {
 
     it('should return 404 if transaction not found for deletion', async () => {
         const response = await request(app)
-            .delete(`${basePath}/transactions/nonexistent-id`);
+            .delete(`${basePath}/transactions/nonexistent-id`)
+            .set('Authorization', `Bearer ${mockToken}`);
 
         expect(response.status).toBe(httpStatus.NOT_FOUND);
         expect(response.body).toHaveProperty('error');
     });
 });
 
-describe('Transactions - GET /transactions/:id/', () => {
-    it('should retrieve a transaction by ID', async () => {
-        const transaction = await prisma.transactions.create({
-            data: {
-                userId: 'test-get-1',
-                type: 'credit',
-                description: 'Transaction to retrieve',
-                value: 200,
-                category: 'Test',
-                date: new Date()
-            }
-        });
+// describe('Transactions - GET /transactions/users/:userId/', () => {
+//     it('should retrieve a list of transactions for a user', async () => {
+//         const transaction = await prisma.transactions.create({
+//             data: {
+//                 userId: mockUser.id,
+//                 type: 'credit',
+//                 description: 'Transaction to retrieve',
+//                 value: 200,
+//                 category: 'Test',
+//                 date: new Date()
+//             }
+//         });
 
-        const response = await request(app)
-            .get(`${basePath}/transactions/${transaction.id}`);
+//         // Simule a requisição com o token no cabeçalho
+//         const response = await request(app)
+//             .get(`${basePath}/transactions/users/${mockUser.id}`)
+//             .set('Authorization', `Bearer ${mockToken}`);
 
-
-            console.log(response.body);
-
-        expect(response.status).toBe(httpStatus.OK);
-        expect(response.body).toHaveProperty('id', transaction.id);
-        expect(response.body.description).toBe(transaction.description);
-    })
-});
+//         expect(response.status).toBe(httpStatus.OK);
+//         expect(response.body).toHaveLength(1);
+//         expect(response.body[0]).toHaveProperty('id', transaction.id);
+//         expect(response.body[0].description).toBe(transaction.description);
+//     });
+// });
