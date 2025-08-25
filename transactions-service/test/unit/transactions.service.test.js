@@ -6,9 +6,12 @@ import httpStatus from 'http-status';
 import RabbitMQService from '../../src/services/rabbit-mq.service';
 import 'dotenv/config';
 import jwt from 'jsonwebtoken';
+import DatabaseService from '../../src/services/database.service';
+import fs from 'fs';
 
 const prisma = new PrismaClient();
 const basePath = '/api/v1';
+const testPath = 'database.json';
 
 // jest.mock('../../src/middlewares/auth.middleware.js');
 // jest.mock('../../src/services/transactions.service.js');
@@ -26,6 +29,9 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+    if (fs.existsSync(testPath))
+        fs.unlinkSync(testPath);
+
     await prisma.$disconnect();
     server.close();
 });
@@ -385,3 +391,30 @@ describe('Transactions - DELETE /transactions/:id', () => {
 //         expect(response.body[0].description).toBe(transaction.description);
 //     });
 // });
+
+describe('Transactions - POST /transactions/processed', () => {
+    const dbService = new DatabaseService();
+    it('should read the processed transactions queue and process to our JSON database', async () => {
+        const mockConnect = jest.fn();
+        const mockConsumeFromQueue = jest.fn();
+
+        RabbitMQService.mockImplementation(() => ({
+            connect: mockConnect,
+            consumeFromQueue: mockConsumeFromQueue
+        }));
+
+        const response = await request(app)
+            .post(`${basePath}/transactions/processed`)
+            .set('Authorization', `Bearer ${mockToken}`);
+
+        expect(RabbitMQService).toHaveBeenCalledTimes(1);
+        expect(mockConnect).toHaveBeenCalledTimes(1);
+        expect(mockConsumeFromQueue).toHaveBeenCalledWith(process.env.QUEUE_PROCESSED, expect.any(Function));
+
+        expect(response.status).toBe(httpStatus.OK);
+        expect(response.body).toHaveProperty('message', Constants.MESSAGES.SUCCESS.TRANSACTIONS.QUEUE_PROCESSED);
+
+        const databaseContent = await dbService.getTransactions();
+        expect(databaseContent).toHaveProperty('transactions');
+    });
+});

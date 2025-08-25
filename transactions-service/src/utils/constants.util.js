@@ -5,6 +5,7 @@ export const Constants = {
                 CREATED: "Transação criada com sucesso.",
                 UPDATED: "Transação atualizada com sucesso.",
                 DELETED: "Transação excluída com sucesso.",
+                QUEUE_PROCESSED: "Processamento da fila iniciado com sucesso."
             },
             AUTH: {
                 REGISTERED: "Usuário registrado com sucesso.",

@@ -63,4 +63,17 @@ router.delete('/:userId', authMiddleware, async (req, res, next) => {
     }
 });
 
+router.post(
+    "/processed",
+    authMiddleware,
+    async (req, res, next) => {
+        try {
+            const result = await new TransactionsService().processTransactions();
+            res.status(httpStatus.OK).json(result);
+        } catch (error) {
+            next(error);
+        }
+    }
+);
+
 export default router;

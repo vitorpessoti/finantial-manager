@@ -16,5 +16,6 @@ export default {
   // Se for o caso, pode ser necessário ajustar para não ignorar o seu serviço
   transformIgnorePatterns: [
     'node_modules/(?!(your-module-name-if-any)/)',
+    '/node_modules/(?!(lowdb|lowdb/node)/)',
   ],
 };

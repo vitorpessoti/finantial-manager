@@ -4,6 +4,7 @@ import createError from 'http-errors';
 import { Constants } from '../utils/constants.util.js';
 import RabbitMQService from './rabbit-mq.service.js';
 import Logger from './logger.service.js';
+import DatabaseService from './database.service.js';
 
 const logger = new Logger({
     dateFormat: process.env.DATE_FORMAT,
@@ -13,6 +14,7 @@ const logger = new Logger({
 export default class TransactionsService {
     constructor() {
         this.repository = new TransactionsRepository();
+        this.databaseService = new DatabaseService();
     }
 
     async createTransaction(data) {
@@ -86,6 +88,34 @@ export default class TransactionsService {
         } catch (error) {
             throw createError(
                 error.status || httpStatus.BAD_REQUEST,
+                error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
+            );
+        }
+    }
+
+    async processTransactions() {
+        try {
+            const rabbitMQService = new RabbitMQService(
+                process.env.RABBITMQ_URL,
+                process.env.DATE_FORMAT,
+                process.env.LOGS_PATH
+            );
+            await rabbitMQService.connect();
+            await rabbitMQService.consumeFromQueue(process.env.QUEUE_PROCESSED, async (msg) => {
+                if (msg !== null) {
+                    const transactionData = JSON.parse(msg.content.toString());
+                    logger.info(`Processing transaction from queue: ${transactionData.description}`);
+                    this.databaseService.addTransaction(transactionData);
+                }
+            });
+            
+            return {
+                message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.QUEUE_PROCESSED
+            };
+        } catch (error) {
+            logger.error(`Error processing transactions: ${error.message}`);
+            throw createError(
+                httpStatus.INTERNAL_SERVER_ERROR,
                 error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
             );
         }
