@@ -76,4 +76,18 @@ router.post(
     }
 );
 
+router.get(
+    "/all/processed",
+    authMiddleware,
+    async (req, res, next) => {
+        try {
+            const result = await new TransactionsService().getProcessedTransactions();
+            res.status(httpStatus.OK).json(result);
+        } catch (error) {
+            console.error('Error in GET /processed:', error);
+            next(error);
+        }
+    }
+);
+
 export default router;

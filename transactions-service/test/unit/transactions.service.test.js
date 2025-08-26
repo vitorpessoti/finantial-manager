@@ -418,3 +418,31 @@ describe('Transactions - POST /transactions/processed', () => {
         expect(databaseContent).toHaveProperty('transactions');
     });
 });
+
+describe('Transactions - GET /all/processed', () => {
+    it('should retrieve processed transactions from the JSON database', async () => {
+        const dbService = new DatabaseService();
+        // Preencha o "banco de dados" JSON com uma transação de teste
+        const testTransaction = {
+            id: 'test-processed-1',
+            userId: 'test-user-1',
+            type: 'credit',
+            description: 'Processed Transaction',
+            value: 150,
+            category: 'Test',
+            date: new Date().toISOString()
+        };
+        await dbService.addTransaction(testTransaction);
+
+        const response = await request(app)
+            .get(`${basePath}/transactions/all/processed`)
+            .set('Authorization', `Bearer ${mockToken}`);
+
+        expect(response.status).toBe(httpStatus.OK);
+        expect(response.body).toHaveProperty('transactions');
+        expect(Array.isArray(response.body.transactions)).toBe(true);
+        expect(response.body.transactions.length).toBeGreaterThan(0);
+        expect(response.body.transactions[0]).toHaveProperty('id', testTransaction.id);
+        expect(response.body.transactions[0].description).toBe(testTransaction.description);
+    });
+});

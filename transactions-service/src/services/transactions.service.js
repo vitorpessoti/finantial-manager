@@ -51,7 +51,6 @@ export default class TransactionsService {
     }
 
     async getTransactionById(id) {
-        console.log(`Fetching transaction with ID: ${id}`);
         return this.repository.findById(id);
     }
 
@@ -113,6 +112,19 @@ export default class TransactionsService {
             };
         } catch (error) {
             logger.error(`Error processing transactions: ${error.message}`);
+            throw createError(
+                httpStatus.INTERNAL_SERVER_ERROR,
+                error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
+            );
+        }
+    }
+    
+    async getProcessedTransactions() {
+        try {
+            const transactions = await this.databaseService.getTransactions();
+            return transactions;
+        } catch (error) {
+            logger.error(`Error while retrieving processed transactions: ${error.message}`);
             throw createError(
                 httpStatus.INTERNAL_SERVER_ERROR,
                 error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
