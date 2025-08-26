@@ -24,7 +24,7 @@ export default class TransactionsService {
                 ...data,
                 date: isoDate
             }
-            const createdTransaction = await this.repository.create(transactionBody);
+            // const createdTransaction = await this.repository.create(transactionBody);
 
             // Publish the transaction to RabbitMQ for further processing
             const rabbitMQService = new RabbitMQService(
@@ -38,7 +38,7 @@ export default class TransactionsService {
 
             return {
                 message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.CREATED,
-                data: createdTransaction
+                data: transactionBody
             };
         } catch (error) {
             logger.error(`Error creating transaction: ${error.message}`);
@@ -103,7 +103,8 @@ export default class TransactionsService {
             await rabbitMQService.consumeFromQueue(process.env.QUEUE_PROCESSED, async (transactionData) => {
                 if (transactionData !== null) {
                     logger.info(`Processing transaction from queue: ${transactionData.description}`);
-                    this.databaseService.addTransaction(transactionData);
+                    // this.databaseService.addTransaction(transactionData);
+                    await this.repository.create(transactionData);
                 }
             });
             
