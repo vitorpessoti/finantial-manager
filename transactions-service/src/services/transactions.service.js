@@ -101,9 +101,8 @@ export default class TransactionsService {
                 process.env.LOGS_PATH
             );
             await rabbitMQService.connect();
-            await rabbitMQService.consumeFromQueue(process.env.QUEUE_PROCESSED, async (msg) => {
-                if (msg !== null) {
-                    const transactionData = JSON.parse(msg.content.toString());
+            await rabbitMQService.consumeFromQueue(process.env.QUEUE_PROCESSED, async (transactionData) => {
+                if (transactionData !== null) {
                     logger.info(`Processing transaction from queue: ${transactionData.description}`);
                     this.databaseService.addTransaction(transactionData);
                 }
