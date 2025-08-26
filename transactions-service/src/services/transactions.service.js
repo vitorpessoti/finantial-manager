@@ -120,7 +120,7 @@ export default class TransactionsService {
         }
     }
     
-    async getProcessedTransactions() {
+    async getProcessedTransactions(user) {
         try {
             const transactions = await this.databaseService.getTransactions();
             return transactions;

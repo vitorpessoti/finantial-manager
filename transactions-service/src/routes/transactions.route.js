@@ -64,7 +64,7 @@ router.delete('/:userId', authMiddleware, async (req, res, next) => {
 });
 
 router.post(
-    "/processed",
+    "/pending/process",
     authMiddleware,
     async (req, res, next) => {
         try {
@@ -81,10 +81,9 @@ router.get(
     authMiddleware,
     async (req, res, next) => {
         try {
-            const result = await new TransactionsService().getProcessedTransactions();
+            const result = await new TransactionsService().listTransactionsByUser(req.user.userId);
             res.status(httpStatus.OK).json(result);
         } catch (error) {
-            console.error('Error in GET /processed:', error);
             next(error);
         }
     }
