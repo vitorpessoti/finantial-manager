@@ -15,6 +15,7 @@ model transactions {
   value       Float
   category    String
   date        DateTime
+  isProcessed Boolean
   createdAt   DateTime @default(now())
 }
 
