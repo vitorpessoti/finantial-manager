@@ -1,0 +1,27 @@
+<mat-card>
+    <h2>Create your account</h2>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Name</mat-label>
+            <input matInput formControlName="name" type="name" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput formControlName="password" type="password" />
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+            Register
+        </button>
+
+        <div *ngIf="error" style="color: red; margin-top: 10px;">
+            {{ error }}
+        </div>
+    </form>
+</mat-card>

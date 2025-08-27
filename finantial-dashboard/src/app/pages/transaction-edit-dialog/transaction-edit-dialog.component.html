@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>Editar Transação</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-form-field appearance="fill">
+        <mat-label>Tipo</mat-label>
+        <mat-select formControlName="type" required>
+            <mat-option value="credit">Credit</mat-option>
+            <mat-option value="debit">Debit</mat-option>
+        </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Descrição</mat-label>
+        <input matInput formControlName="description">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Valor</mat-label>
+        <input matInput type="number" formControlName="value">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="full-width">
+        <mat-label>Categoria</mat-label>
+        <input matInput formControlName="category">
+    </mat-form-field>
+
+    <mat-form-field appearance="fill">
+        <mat-label>Data</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="date" required>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+    </mat-form-field>
+
+
+    <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 8px;">
+        <button mat-button type="button" (click)="cancel()">Cancelar</button>
+        <button mat-flat-button color="primary" type="submit">Salvar</button>
+    </div>
+</form>
