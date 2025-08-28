@@ -1,39 +1,54 @@
-<h2 mat-dialog-title>Editar Transação</h2>
+<div class="container">
+    <h2 mat-dialog-title class="text-align-center">Transaction Details</h2>
 
-<form [formGroup]="form" (ngSubmit)="submit()">
-    <mat-form-field appearance="fill">
-        <mat-label>Tipo</mat-label>
-        <mat-select formControlName="type" required>
-            <mat-option value="credit">Credit</mat-option>
-            <mat-option value="debit">Debit</mat-option>
-        </mat-select>
-    </mat-form-field>
+    <form [formGroup]="form" (ngSubmit)="submit()">
+        <mat-form-field appearance="fill" class="form-control">
+            <mat-label>Type</mat-label>
+            <mat-select formControlName="type" required>
+                <mat-option value="credit">CREDIT</mat-option>
+                <mat-option value="debit">DEBIT</mat-option>
+            </mat-select>
+        </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Descrição</mat-label>
-        <input matInput formControlName="description">
-    </mat-form-field>
+        <mat-form-field appearance="fill" class="form-control">
+            <mat-label>Description</mat-label>
+            <input matInput formControlName="description">
+        </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Valor</mat-label>
-        <input matInput type="number" formControlName="value">
-    </mat-form-field>
+        <mat-form-field appearance="fill" class="form-control">
+            <mat-label>Amount</mat-label>
+            <input matInput formControlName="value" currencyMask ngDefaultControl>
+        </mat-form-field>
 
-    <mat-form-field appearance="fill" class="full-width">
-        <mat-label>Categoria</mat-label>
-        <input matInput formControlName="category">
-    </mat-form-field>
+        <mat-form-field appearance="fill" class="form-control">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category" required>
+                <mat-option value="BANK DEPOSIT">BANK DEPOSIT</mat-option>
+                <mat-option value="BANK TRANSFER">BANK TRANSFER</mat-option>
+                <mat-option value="BILL">BILL (BANK SLIP)</mat-option>
+                <mat-option value="CASH">CASH</mat-option>
+                <mat-option value="CHECK">CHECK</mat-option>
+                <mat-option value="CREDIT CARD">CREDIT CARD</mat-option>
+                <mat-option value="DEPOSIT">DEPOSIT</mat-option>
+                <mat-option value="DEBIT CARD">DEBIT CARD</mat-option>
+                <mat-option value="GIFT CARD">GIFT CARD</mat-option>
+                <mat-option value="INTERNAL TRANSFER">INTERNAL TRANSFER</mat-option>
+                <mat-option value="MEAL CARD">MEAL CARD</mat-option>
+                <mat-option value="PIX">PIX</mat-option>
+            </mat-select>
+        </mat-form-field>
 
-    <mat-form-field appearance="fill">
-        <mat-label>Data</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="date" required>
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-    </mat-form-field>
+        <mat-form-field appearance="fill" class="form-control">
+            <mat-label>Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="date" required>
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
 
 
-    <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 8px;">
-        <button mat-button type="button" (click)="cancel()">Cancelar</button>
-        <button mat-flat-button color="primary" type="submit">Salvar</button>
-    </div>
-</form>
+        <div style="margin-top: 1rem; display: flex; justify-content: flex-end; gap: 8px;">
+            <button mat-button type="button" (click)="cancel()">Cancel</button>
+            <button mat-flat-button color="primary" type="submit">Save</button>
+        </div>
+    </form>
+</div>

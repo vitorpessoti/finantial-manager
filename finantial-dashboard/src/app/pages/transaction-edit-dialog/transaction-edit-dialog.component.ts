@@ -12,6 +12,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MessageDialogComponent } from '../../shared/dialogs/message-dialog/message-dialog.component';
 import { TransactionsService } from '../../services/transactions.service';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
+import { CurrencyMaskDirective } from '../../shared/directives/currency-mask.directive';
 
 @Component({
   selector: 'app-transaction-edit-dialog',
@@ -24,12 +25,14 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
     MatButtonModule,
     MatSelectModule,
     MatDatepickerModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    CurrencyMaskDirective
   ],
   templateUrl: './transaction-edit-dialog.component.html',
   providers: [
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' }
-  ]
+  ],
+  styleUrls: ['./transaction-edit-dialog.component.scss']
 })
 export class TransactionEditDialogComponent {
   form!: FormGroup;
@@ -47,47 +50,58 @@ export class TransactionEditDialogComponent {
     this.form = this.fb.group({
       type: [data?.type || 'debit', Validators.required],
       description: [data?.description || '', Validators.required],
-      value: [data?.value || '', [Validators.required, Validators.min(0.01)]],
+      value: [this.converterParaCentavos(data?.value) || '', [Validators.required, Validators.min(0.01)]],
       category: [data?.category || '', Validators.required],
       date: [data?.date || new Date().toISOString().substring(0, 10), Validators.required],
       userId: [data?.userId || '', Validators.required]
     });
   }
 
+  private converterParaCentavos(valorEmReais: number): number {
+    // Multiplica por 100 e arredonda para evitar problemas com floats
+    return Math.round(valorEmReais * 100);
+  }
 
   submit(): void {
     if (this.form.valid) {
+      const amount = this.form.get('value')?.value;
+      const formatedAmount = parseFloat((amount / 100).toFixed(2));
+      const transactionData = {
+        ...this.form.value,
+        value: formatedAmount
+      };
+
       const request$ = this.data?.id
-        ? this.transactionsService.update(this.data.id, this.form.value)
-        : this.transactionsService.create(this.form.value);
+        ? this.transactionsService.update(this.data.id, transactionData)
+        : this.transactionsService.create(transactionData);
 
       request$.subscribe({
         next: (res) => {
+          console.log('############# Transação salva com sucesso.', res);
           this.dialog.open(MessageDialogComponent, {
             data: {
-              title: 'Sucesso!',
-              message: 'A transação foi atualizada com sucesso.'
+              title: 'Success!',
+              message: res.message || 'Transaction saved successfully.'
             }
           });
-          this.dialogRef.close(true);
-          this.dialogRef.close(this.form.value);
+          this.dialogRef.close();
         },
         error: (err) => {
           console.error('Erro ao salvar transação.', err);
           this.dialog.open(MessageDialogComponent, {
             data: {
-              title: 'Erro',
-              message: 'Ocorreu um erro ao atualizar a transação.'
+              title: 'Error.',
+              message: err.error?.message || 'An error occurred while saving the transaction.'
             }
           });
         }
       });
     } else {
-      console.log('Formulário inválido');
+      console.log('Invalid data.');
       this.dialog.open(MessageDialogComponent, {
         data: {
-          title: 'Erro',
-          message: 'Ocorreu um erro ao atualizar a transação.'
+          title: 'Error',
+          message: 'There was an error. Check your data.'
         }
       });
     }

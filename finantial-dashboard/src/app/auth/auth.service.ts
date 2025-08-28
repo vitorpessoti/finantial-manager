@@ -7,16 +7,18 @@ import { environment } from '../environments/environment'; // ajuste o caminho c
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = `${environment.apiUrl}/auth`; // ajuste para o seu backend
+    private baseUrl = environment.production
+        ? `${environment.apiUrl}/auth`
+        : `${environment.apiUrlLocal}/auth`;
 
   constructor(private http: HttpClient) { }
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, { email, password });
+    return this.http.post(`${this.baseUrl}/login`, { email, password });
   }
 
   register(name: string, email: string, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, { name, email, password });
+    return this.http.post(`${this.baseUrl}/register`, { name, email, password });
   }
 
   logout() {
