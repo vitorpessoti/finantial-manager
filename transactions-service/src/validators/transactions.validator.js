@@ -5,7 +5,6 @@ import moment from 'moment';
 class PlayersUpdateValidator {
     static defaultValidation() {
         return [
-
             body('type')
                 .exists()
                 .withMessage(Constants.MESSAGES.ERROR.TRANSACTIONS.MISSING_TYPE)
@@ -51,11 +50,6 @@ class PlayersUpdateValidator {
 
     static updateValidation() {
         return [
-            body('userId')
-                .not()
-                .exists()
-                .withMessage(Constants.MESSAGES.ERROR.TRANSACTIONS.CANNOT_UPDATE_USER_ID),
-
             body('type')
                 .optional()
                 .isIn(['debit', 'credit'])

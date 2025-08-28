@@ -54,14 +54,14 @@ router.patch(
     }
 });
 
-router.delete('/:userId', authMiddleware, async (req, res, next) => {
-    try {
-        const result = await new TransactionsService().deleteTransaction(req.params.userId);
-        res.status(httpStatus.OK).json(result);
-    } catch (error) {
-        next(error);
-    }
-});
+// router.delete('/:userId', authMiddleware, async (req, res, next) => {
+//     try {
+//         const result = await new TransactionsService().deleteTransaction(req.params.userId);
+//         res.status(httpStatus.OK).json(result);
+//     } catch (error) {
+//         next(error);
+//     }
+// });
 
 router.post(
     "/pending/process",

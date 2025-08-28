@@ -34,4 +34,11 @@ export default class TransactionsRepository {
             data,
         });
     }
+
+    async updateByUniqueId(uniqueId, data) {
+        return prisma.transactions.updateMany({
+            where: { uniqueId },
+            data,
+        });
+    }
 }

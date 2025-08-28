@@ -10,12 +10,13 @@ datasource db {
 model transactions {
   id          String   @id @default(uuid())
   userId      String
+  uniqueId    String
   type        String
   description String
   value       Float
   category    String
   date        DateTime
-  isProcessed Boolean
+  isProcessed Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
 

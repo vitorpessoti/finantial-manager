@@ -5,6 +5,7 @@ import { Constants } from '../utils/constants.util.js';
 import RabbitMQService from './rabbit-mq.service.js';
 import Logger from './logger.service.js';
 import DatabaseService from './database.service.js';
+import { randomUUID } from 'crypto';
 
 const logger = new Logger({
     dateFormat: process.env.DATE_FORMAT,
@@ -22,7 +23,8 @@ export default class TransactionsService {
             const isoDate = new Date(data.date).toISOString();
             const transactionBody = {
                 ...data,
-                date: isoDate
+                date: isoDate,
+                uniqueId: randomUUID()
             }
             // const createdTransaction = await this.repository.create(transactionBody);
 
@@ -41,6 +43,7 @@ export default class TransactionsService {
                 data: transactionBody
             };
         } catch (error) {
+            console.log(`Error creating transaction: ${error.message}`);
             logger.error(`Error creating transaction: ${error.message}`);
             throw createError(httpStatus.BAD_REQUEST, error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT);
         }
@@ -54,35 +57,50 @@ export default class TransactionsService {
         return this.repository.findById(id);
     }
 
-    async deleteTransaction(id) {
-        try {
-            const existingTransaction = await this.repository.findById(id);
-            if (!existingTransaction)
-                throw createError(httpStatus.NOT_FOUND, Constants.MESSAGES.ERROR.TRANSACTIONS.NOT_FOUND);
+    // async deleteTransaction(id) {
+    //     try {
+    //         const existingTransaction = await this.repository.findById(id);
+    //         if (!existingTransaction)
+    //             throw createError(httpStatus.NOT_FOUND, Constants.MESSAGES.ERROR.TRANSACTIONS.NOT_FOUND);
 
-            const deletedTransaction = await this.repository.delete(id)
-            return {
-                message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.DELETED,
-                data: deletedTransaction
-            };
-        } catch (error) {
-            throw createError(
-                error.status || httpStatus.BAD_REQUEST,
-                error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
-            );
-        }
-    }
+    //         const deletedTransaction = await this.repository.delete(id)
+    //         return {
+    //             message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.DELETED,
+    //             data: deletedTransaction
+    //         };
+    //     } catch (error) {
+    //         throw createError(
+    //             error.status || httpStatus.BAD_REQUEST,
+    //             error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
+    //         );
+    //     }
+    // }
 
     async updateTransaction(id, data) {
         try {
+            delete data.userId; // Prevent userId updates
             const existingTransaction = await this.repository.findById(id);
             if (!existingTransaction)
                 throw createError(httpStatus.NOT_FOUND, Constants.MESSAGES.ERROR.TRANSACTIONS.NOT_FOUND);
 
-            const updatedTransaction = await this.repository.update(id, data);
+            const transactionBody = {
+                ...data,
+                id,
+                uniqueId: existingTransaction.uniqueId // Ensure uniqueId remains unchanged
+            };
+
+            const rabbitMQService = new RabbitMQService(
+                process.env.RABBITMQ_URL,
+                process.env.DATE_FORMAT,
+                process.env.LOGS_PATH
+            );
+            await rabbitMQService.connect();
+            await rabbitMQService.sendToQueue(process.env.QUEUE_UPDATE_TRANSACTIONS, transactionBody);
+            logger.info(`Transaction updated and sent to RabbitMQ: ${JSON.stringify(transactionBody.description || existingTransaction.description)}`);
+
             return {
                 message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.UPDATED,
-                data: updatedTransaction
+                data: existingTransaction // Return existing data until processed from queue
             };
         } catch (error) {
             throw createError(
@@ -100,32 +118,26 @@ export default class TransactionsService {
                 process.env.LOGS_PATH
             );
             await rabbitMQService.connect();
+
             await rabbitMQService.consumeFromQueue(process.env.QUEUE_PROCESSED, async (transactionData) => {
                 if (transactionData !== null) {
-                    logger.info(`Processing transaction from queue: ${transactionData.description}`);
-                    // this.databaseService.addTransaction(transactionData);
+                    logger.info(`Processing transaction from queue "${process.env.QUEUE_PROCESSED}": ${transactionData.description}`);
                     await this.repository.create(transactionData);
                 }
             });
-            
+
+            await rabbitMQService.consumeFromQueue(process.env.QUEUE_UPDATED_PROCESSED_TRANSACTIONS, async (transactionData) => {
+                if (transactionData !== null) {
+                    logger.info(`Processing transaction from queue "${process.env.QUEUE_UPDATED_PROCESSED_TRANSACTIONS}": ${transactionData.description}`);
+                    await this.repository.updateByUniqueId(transactionData.uniqueId, transactionData);
+                }
+            });
+
             return {
                 message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.QUEUE_PROCESSED
             };
         } catch (error) {
             logger.error(`Error processing transactions: ${error.message}`);
-            throw createError(
-                httpStatus.INTERNAL_SERVER_ERROR,
-                error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT
-            );
-        }
-    }
-    
-    async getProcessedTransactions(user) {
-        try {
-            const transactions = await this.databaseService.getTransactions();
-            return transactions;
-        } catch (error) {
-            logger.error(`Error while retrieving processed transactions: ${error.message}`);
             throw createError(
                 httpStatus.INTERNAL_SERVER_ERROR,
                 error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT

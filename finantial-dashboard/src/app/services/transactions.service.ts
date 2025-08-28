@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Transaction } from '../models/transaction.model';
+import { environment } from '../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class TransactionsService {
-    private baseUrl = 'https://finantial-manager.onrender.com/api/v1/transactions';
+    private baseUrl = `${environment.apiUrl}/transactions`;
 
     constructor(private http: HttpClient) { }
 
