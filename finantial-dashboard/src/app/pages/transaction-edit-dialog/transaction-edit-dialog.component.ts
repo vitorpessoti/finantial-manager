@@ -73,7 +73,7 @@ export class TransactionEditDialogComponent {
           this.dialogRef.close(this.form.value);
         },
         error: (err) => {
-          console.error('Erro ao salvar transação', err);
+          console.error('Erro ao salvar transação.', err);
           this.dialog.open(MessageDialogComponent, {
             data: {
               title: 'Erro',
