@@ -16,20 +16,16 @@ export class AuthInterceptor implements HttpInterceptor {
   constructor(private authService: AuthService, private router: Router) { }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    const token = this.authService.getToken()?.trim();
+    // Adiciona a flag withCredentials para que os cookies de autenticação sejam enviados
+    // Essa é a parte que substitui o setHeaders com o token manualmente
+    const withCredentialsReq = req.clone({
+      withCredentials: true
+    });
 
-    if (token) {
-      req = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-    }
-
-    return next.handle(req).pipe(
+    return next.handle(withCredentialsReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          // Token expirou ou inválido
+          // Acessa negado ou token expirado: limpa a sessão e redireciona
           this.authService.clearToken();
           this.router.navigate(['/login']);
         }

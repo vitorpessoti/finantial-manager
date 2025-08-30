@@ -1,7 +1,7 @@
 <mat-card>
     <h2>Login</h2>
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="outline" class="full-width">
+        <!-- <mat-form-field appearance="outline" class="full-width">
             <mat-label>Email</mat-label>
             <input matInput formControlName="email" type="email" />
         </mat-form-field>
@@ -9,7 +9,16 @@
         <mat-form-field appearance="outline" class="full-width">
             <mat-label>Senha</mat-label>
             <input matInput formControlName="password" type="password" />
-        </mat-form-field>
+        </mat-form-field> -->
+
+        <div *ngIf="!isTwoFactorEnabled && !qrCodeUrl">
+            <h2>Login</h2>
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                <input type="email" formControlName="email" placeholder="Email">
+                <input type="password" formControlName="password" placeholder="Senha">
+                <button type="submit">Login</button>
+            </form>
+        </div>
 
         <button mat-raised-button color="primary" type="submit" [disabled]="loading">
             Entrar
@@ -19,4 +28,20 @@
             {{ error }}
         </div>
     </form>
+
+    <div *ngIf="qrCodeUrl">
+        <h2>Configure o 2FA</h2>
+        <p>Escaneie este QR Code com seu aplicativo autenticador.</p>
+        <qrcode [qrdata]="qrCodeUrl" [width]="256" [errorCorrectionLevel]="'M'"></qrcode>
+        <button (click)="authenticatorAppConfigured()">Já configurei</button>
+    </div>
+
+    <div *ngIf="isTwoFactorEnabled">
+        <h2>Código de Verificação</h2>
+        <p>Por favor, digite o código do seu aplicativo.</p>
+        <form [formGroup]="twoFactorForm" (ngSubmit)="onSubmit2FA()">
+            <input type="text" formControlName="code" placeholder="Código 2FA" minlength="6" maxlength="6">
+            <button type="submit">Verificar</button>
+        </form>
+    </div>
 </mat-card>

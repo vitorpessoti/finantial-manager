@@ -7,6 +7,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { TransactionEditDialogComponent } from '../transaction-edit-dialog/transaction-edit-dialog.component';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-transactions',
@@ -29,11 +30,12 @@ export class TransactionsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private transactionsService: TransactionsService,
+    private authService: AuthService,
     private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
-    this.userId = this.route.snapshot.paramMap.get('userId') || '';
+    this.userId = this.authService.getUserId() || '';
 
     if (this.userId) {
       this.getTransactions(this.userId);
