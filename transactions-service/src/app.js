@@ -7,8 +7,15 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN_ALLOWED,
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
 app.use(cookieParser());
-app.use(cors({ origin: process.env.CORS_ORIGIN_ALLOWED, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use('/', routes);
 
