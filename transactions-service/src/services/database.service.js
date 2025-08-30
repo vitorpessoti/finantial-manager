@@ -19,7 +19,7 @@ export default class DatabaseService {
             fs.writeFileSync(this.file, JSON.stringify(newContent, null, 2));
             return transaction;
         } catch (error) {
-            this.logger.error('Error adding transaction:', error);
+            console.error('Error adding transaction:', error);
             throw error;
         }
     }
@@ -35,7 +35,7 @@ export default class DatabaseService {
             const transactions = fs.readFileSync(this.file, 'utf-8');
             return JSON.parse(transactions);
         } catch (error) {
-            this.logger.error('Error getting transactions:', error);
+            console.error('Error getting transactions:', error);
             throw error;
         }
     }
@@ -52,7 +52,7 @@ export default class DatabaseService {
             fs.writeFileSync(this.file, JSON.stringify(newContent, null, 2));
             return updatedTransaction;
         } catch (error) {
-            this.logger.error('Error updating transaction:', error);
+            console.error('Error updating transaction:', error);
             throw error;
         }
     }
@@ -68,7 +68,7 @@ export default class DatabaseService {
             }
             fs.writeFileSync(this.file, JSON.stringify(newContent, null, 2));
         } catch (error) {
-            this.logger.error('Error deleting transaction:', error);
+            console.error('Error deleting transaction:', error);
             throw error;
         }
     }

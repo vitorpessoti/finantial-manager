@@ -19,7 +19,6 @@ router.post('/register', async (req, res, next) => {
 });
 
 router.post('/login', async (req, res, next) => {
-    console.log('Login request received');
     try {
         const { email, password } = req.body;
         const result = await authService.login(email, password);

@@ -10,7 +10,7 @@ const validate = (req, res, next) => {
     const err = validationResult(req);
     if (!err.isEmpty()) {
         const errors = err.errors.map(error => error.msg);
-        logger.warn(`Validation errors: ${JSON.stringify(errors)}`);
+        console.log(`Validation errors: ${JSON.stringify(errors)}`);
         return res.status(400).json({ errors });
     }
     next();

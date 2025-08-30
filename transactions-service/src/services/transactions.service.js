@@ -36,7 +36,7 @@ export default class TransactionsService {
             );
             await rabbitMQService.connect();
             await rabbitMQService.sendToQueue(process.env.QUEUE_PENDING_TRANSACTIONS, transactionBody);
-            logger.info(`Transaction created and sent to RabbitMQ: ${JSON.stringify(transactionBody.description)}`);
+            console.log(`Transaction created and sent to RabbitMQ: ${JSON.stringify(transactionBody.description)}`);
 
             return {
                 message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.CREATED,
@@ -44,7 +44,7 @@ export default class TransactionsService {
             };
         } catch (error) {
             console.log(`Error creating transaction: ${error.message}`);
-            logger.error(`Error creating transaction: ${error.message}`);
+            console.error(`Error creating transaction: ${error.message}`);
             throw createError(httpStatus.BAD_REQUEST, error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT);
         }
     }
@@ -96,7 +96,7 @@ export default class TransactionsService {
             );
             await rabbitMQService.connect();
             await rabbitMQService.sendToQueue(process.env.QUEUE_UPDATE_TRANSACTIONS, transactionBody);
-            logger.info(`Transaction updated and sent to RabbitMQ: ${JSON.stringify(transactionBody.description || existingTransaction.description)}`);
+            console.log(`Transaction updated and sent to RabbitMQ: ${JSON.stringify(transactionBody.description || existingTransaction.description)}`);
 
             return {
                 message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.UPDATED,
@@ -121,14 +121,14 @@ export default class TransactionsService {
 
             await rabbitMQService.consumeFromQueue(process.env.QUEUE_PROCESSED, async (transactionData) => {
                 if (transactionData !== null) {
-                    logger.info(`Processing transaction from queue "${process.env.QUEUE_PROCESSED}": ${transactionData.description}`);
+                    console.log(`Processing transaction from queue "${process.env.QUEUE_PROCESSED}": ${transactionData.description}`);
                     await this.repository.create(transactionData);
                 }
             });
 
             await rabbitMQService.consumeFromQueue(process.env.QUEUE_UPDATED_PROCESSED_TRANSACTIONS, async (transactionData) => {
                 if (transactionData !== null) {
-                    logger.info(`Processing transaction from queue "${process.env.QUEUE_UPDATED_PROCESSED_TRANSACTIONS}": ${transactionData.description}`);
+                    console.log(`Processing transaction from queue "${process.env.QUEUE_UPDATED_PROCESSED_TRANSACTIONS}": ${transactionData.description}`);
                     await this.repository.updateByUniqueId(transactionData.uniqueId, transactionData);
                 }
             });
@@ -137,7 +137,7 @@ export default class TransactionsService {
                 message: Constants.MESSAGES.SUCCESS.TRANSACTIONS.QUEUE_PROCESSED
             };
         } catch (error) {
-            logger.error(`Error processing transactions: ${error.message}`);
+            console.error(`Error processing transactions: ${error.message}`);
             throw createError(
                 httpStatus.INTERNAL_SERVER_ERROR,
                 error.message || Constants.MESSAGES.ERROR.TRANSACTIONS.DEFAULT

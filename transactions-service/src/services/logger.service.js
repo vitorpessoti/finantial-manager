@@ -16,15 +16,15 @@ export default class Logger {
     }
 
     info(message) {
-        this.logger.info(message);
+        console.log(message);
     }
 
     error(message) {
-        this.logger.error(message);
+        console.error(message);
     }
 
     warn(message) {
-        this.logger.warn(message);
+        this.console.log(message);
     }
 
     debug(message) {

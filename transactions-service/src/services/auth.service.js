@@ -99,8 +99,8 @@ export default class AuthService {
                 return { message: Constants.MESSAGES.ERROR.AUTH.AUTHENTICATION_FAILED };
             }
         } catch (error) {
-            logger.error('Error logging in with 2FA:');
-            logger.error(error);
+            console.error('Error logging in with 2FA:');
+            console.error(error);
             throw createError(
                 httpStatus.UNAUTHORIZED,
                 Constants.MESSAGES.ERROR.AUTH.AUTHENTICATION_FAILED
@@ -123,8 +123,8 @@ export default class AuthService {
                 userId
             };
         } catch (error) {
-            logger.error('Error enabling 2FA token:');
-            logger.error(error);
+            console.error('Error enabling 2FA token:');
+            console.error(error);
             throw createError(
                 httpStatus.INTERNAL_SERVER_ERROR,
                 Constants.MESSAGES.ERROR.AUTH.AUTHENTICATION_FAILED
@@ -137,8 +137,8 @@ export default class AuthService {
             await this.usersRepository.update(userId, { isTwoFactorEnabled: true });
             return { message: 'Two-factor authentication enabled successfully.' };
         } catch (error) {
-            logger.error('Error enabling user 2FA:');
-            logger.error(error);
+            console.error('Error enabling user 2FA:');
+            console.error(error);
             throw createError(
                 httpStatus.INTERNAL_SERVER_ERROR,
                 Constants.MESSAGES.ERROR.AUTH.AUTHENTICATION_FAILED
@@ -167,8 +167,8 @@ export default class AuthService {
                 Constants.MESSAGES.ERROR.AUTH.AUTHENTICATION_FAILED
             );
         } catch (error) {
-            logger.error('Error verifying 2FA token:');
-            logger.error(error);
+            console.error('Error verifying 2FA token:');
+            console.error(error);
             throw createError(
                 httpStatus.UNAUTHORIZED,
                 Constants.MESSAGES.ERROR.AUTH.AUTHENTICATION_FAILED

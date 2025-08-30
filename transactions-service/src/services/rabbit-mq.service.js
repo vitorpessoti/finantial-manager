@@ -21,15 +21,15 @@ export default class RabbitMQ {
         try {
             this.connection = await amqp.connect(this.connectionUrl);
             this.channel = await this.connection.createChannel();
-            this.logger.info('Successfully connected to RabbitMQ');
+            console.log('Successfully connected to RabbitMQ');
             this.retryCount = 0; // Reset the retry counter
         } catch (err) {
             if (this.retryCount < this.maxRetries) {
                 this.retryCount++;
-                this.logger.error(`Error connecting to RabbitMQ (attempt ${this.retryCount}): ${err.message}`);
+                console.error(`Error connecting to RabbitMQ (attempt ${this.retryCount}): ${err.message}`);
                 setTimeout(() => this.connect(), 5000); // Retry after 5 seconds
             } else {
-                this.logger.error('RabbitMQ max retries reached.');
+                console.error('RabbitMQ max retries reached.');
                 process.exit(1); // Finish the process after many retries
             }
         }
@@ -42,20 +42,20 @@ export default class RabbitMQ {
             throw new Error('Channel is not available.');
         }
         await this.channel.assertQueue(queue, { durable: true });
-        this.logger.info(`Queue ${queue} asserted.`);
+        console.log(`Queue ${queue} asserted.`);
     }
 
     // send a message to a queue
     async sendToQueue(queue, msg) {
         await this.assertQueue(queue);
         if (!this.channel) {
-            this.logger.error('Channel is not available for sending messages.');
+            console.error('Channel is not available for sending messages.');
             throw new Error('Channel is not available for sending messages.');
         }
         const json = JSON.stringify(msg);
         const buffer = Buffer.from(json);
         this.channel.sendToQueue(queue, buffer);
-        this.logger.info(`Message sent to the queue: ${queue}`);
+        console.log(`Message sent to the queue: ${queue}`);
     }
 
     // consume messages from any queue
@@ -73,8 +73,8 @@ export default class RabbitMQ {
                     this.channel.ack(msg); // confirm the message delivering
                 }
             } catch (error) {
-                this.logger.error(`Error while consuming the messages from queue: ${queue}`);
-                this.logger.error(error);
+                console.error(`Error while consuming the messages from queue: ${queue}`);
+                console.error(error);
                 this.channel.nack(msg, false, false);
                 throw new Error(`Error while consuming the messages from the queue "${queue}".`)
             }
