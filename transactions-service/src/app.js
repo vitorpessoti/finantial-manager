@@ -7,10 +7,10 @@ import cookieParser from "cookie-parser";
 
 const app = express();
 
+app.use(cookieParser());
 app.use(cors({ origin: process.env.CORS_ORIGIN_ALLOWED, credentials: true }));
 app.use(express.json());
 app.use('/', routes);
-app.use(cookieParser());
 
 app.use((err, req, res, next) => {
     res.status(err.status || httpStatus.INTERNAL_SERVER_ERROR).json({

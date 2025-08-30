@@ -21,12 +21,14 @@ model transactions {
 }
 
 model User {
-  id         String    @id @default(uuid())
-  email      String    @unique
-  password   String
-  name       String?
-  createdAt  DateTime  @default(now())
-  refreshTokens RefreshToken[]
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  password           String
+  name               String?
+  twoFactorSecret    String?
+  isTwoFactorEnabled Boolean   @default(false)
+  createdAt          DateTime  @default(now())
+  refreshTokens      RefreshToken[]
 }
 
 model RefreshToken {

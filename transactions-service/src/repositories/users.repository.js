@@ -14,4 +14,11 @@ export default class UsersRepository {
     findById(id) {
         return prisma.user.findUnique({ where: { id } });
     }
+
+    async update(id, data) {
+        return prisma.user.update({
+            where: { id },
+            data,
+        });
+    }
 }

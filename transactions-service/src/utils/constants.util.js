@@ -9,7 +9,9 @@ export const Constants = {
             },
             AUTH: {
                 REGISTERED: "User registered successfully.",
-                LOGGED_IN: "Successfully logged in."
+                LOGGED_IN: "Successfully logged in.",
+                LOGGED_OUT: "Successfully logged out.",
+                TWO_FACTOR_REQUIRED: "Two-factor authentication required."
             }
         },
         ERROR: {
@@ -29,6 +31,8 @@ export const Constants = {
             AUTH: {
                 INVALID_CREDENTIALS: "Invalid credentials.",
                 EMAIL_EXISTS: "Email already in use.",
+                AUTHENTICATION_FAILED: "Authentication failed.",
+                TWO_FACTOR_REQUIRED: "Two-factor authentication is required.",
             }
         }
     }
