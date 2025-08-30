@@ -15,23 +15,23 @@ export class TransactionsService {
     constructor(private http: HttpClient) { }
 
     getByUser(userId: string): Observable<Transaction[]> {
-        return this.http.get<Transaction[]>(`${this.baseUrl}/users/${userId}`);
+        return this.http.get<Transaction[]>(`${this.baseUrl}/users/${userId}`, { withCredentials: true });
     }
 
     create(transaction: Partial<Transaction>): Observable<any> {
-        return this.http.post(this.baseUrl, transaction);
+        return this.http.post(this.baseUrl, transaction, { withCredentials: true });
     }
 
     update(id: string, data: Partial<Transaction>): Observable<any> {
-        return this.http.patch(`${this.baseUrl}/${id}`, data);
+        return this.http.patch(`${this.baseUrl}/${id}`, data, { withCredentials: true });
     }
 
     delete(id: string): Observable<any> {
-        return this.http.delete(`${this.baseUrl}/${id}`);
+        return this.http.delete(`${this.baseUrl}/${id}`, { withCredentials: true });
     }
 
     getOne(id: string) {
         console.log(`Fetching transaction with ID: ${id}`);
-        return this.http.get<Transaction>(`${this.baseUrl}/${id}`);
+        return this.http.get<Transaction>(`${this.baseUrl}/${id}`, { withCredentials: true });
     }
 }
