@@ -4,6 +4,7 @@ import { Constants } from '../utils/constants.util.js';
 
 export function authMiddleware(req, res, next) {
     const token = req.cookies['auth-token'];
+    console.log('Auth Middleware - Token:', token);
     if (!token) {
         return res
             .status(httpStatus.UNAUTHORIZED)
@@ -15,6 +16,7 @@ export function authMiddleware(req, res, next) {
         req.user = decoded;
         next();
     } catch (error) {
+        console.error('JWT Verification Error:', error);
         return res
             .status(httpStatus.UNAUTHORIZED)
             .send(Constants.MESSAGES.ERROR.AUTH.INVALID_CREDENTIALS);
