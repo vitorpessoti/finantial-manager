@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: finantial_control
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  transactions-service:
+    build: ./transactions-service
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./transactions-service/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+      - ./transactions-service:/app
+      - /app/node_modules
+      - ./logs:/logs
+
+  transaction-processing-service:
+    build: ./transaction-processing-service
+    ports:
+      - "3001:3001"
+    env_file:
+      - ./transaction-processing-service/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+    volumes:
+    - ./transaction-processing-service:/app
+    - /app/node_modules
+    - ./logs:/logs
+
+  finantial-dashboard:
+    build: ./finantial-dashboard
+    ports:
+      - "4200:4200"
+    depends_on:
+      - transactions-service
+    volumes:
+      - ./finantial-dashboard:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
