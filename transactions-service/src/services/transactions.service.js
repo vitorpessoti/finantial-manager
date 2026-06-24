@@ -119,9 +119,9 @@ export default class TransactionsService {
             );
             await rabbitMQService.connect();
 
-            await rabbitMQService.consumeFromQueue(process.env.QUEUE_PROCESSED, async (transactionData) => {
+            await rabbitMQService.consumeFromQueue(process.env.QUEUE_PENDING_TRANSACTIONS, async (transactionData) => {
                 if (transactionData !== null) {
-                    console.log(`Processing transaction from queue "${process.env.QUEUE_PROCESSED}": ${transactionData.description}`);
+                    console.log(`Processing transaction from queue "${process.env.QUEUE_PENDING_TRANSACTIONS}": ${transactionData.description}`);
                     await this.repository.create(transactionData);
                 }
             });

@@ -4,7 +4,6 @@ import { Constants } from '../utils/constants.util.js';
 
 export function authMiddleware(req, res, next) {
     const token = req.cookies['auth-token'];
-    console.log('Auth Middleware - Token:', token);
     if (!token) {
         return res
             .status(httpStatus.UNAUTHORIZED)
