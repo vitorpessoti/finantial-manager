@@ -181,3 +181,10 @@ Default credentials: `guest` / `guest`
 ## Logs
 
 Application logs are written to `logs/app.log` at the repository root, shared across both backend services.
+
+## Next steps
+
+- [ ] Frontend improvements
+- [ ] Move transaction processing logic to `transaction-processing-service`, making it a true autonomous consumer
+- [ ] Add frontend support for processing pending transactions
+- [ ] Add unit and integration tests
