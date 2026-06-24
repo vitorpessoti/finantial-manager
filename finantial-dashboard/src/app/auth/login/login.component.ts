@@ -8,6 +8,7 @@ import { AuthService } from '../auth.service';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { QRCodeComponent } from 'angularx-qrcode';
+import { RouterModule } from '@angular/router';
 
 @Component({
     selector: 'app-login',
@@ -19,8 +20,10 @@ import { QRCodeComponent } from 'angularx-qrcode';
         MatInputModule,
         MatButtonModule,
         MatCardModule,
-        QRCodeComponent
+        QRCodeComponent,
+        RouterModule
     ],
+    styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
     loginForm: FormGroup;

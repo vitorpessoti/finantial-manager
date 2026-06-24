@@ -19,7 +19,8 @@ import { AuthService } from '../auth.service';
     MatButtonModule,
     MatCardModule
   ],
-  templateUrl: './register.component.html'
+  templateUrl: './register.component.html',
+  styleUrls: ['./register.component.scss']
 })
 export class RegisterComponent {
   registerForm: FormGroup;

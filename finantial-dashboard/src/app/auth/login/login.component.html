@@ -1,5 +1,4 @@
-<mat-card>
-    <h2>Login</h2>
+<mat-card style="padding: 2em; text-align: center;">
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <!-- <mat-form-field appearance="outline" class="full-width">
             <mat-label>Email</mat-label>
@@ -12,17 +11,33 @@
         </mat-form-field> -->
 
         <div *ngIf="!isTwoFactorEnabled && !qrCodeUrl">
-            <h2>Login</h2>
+            <h1>Financial Dashboard</h1>
+            <h3>Login</h3>
             <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-                <input type="email" formControlName="email" placeholder="Email">
-                <input type="password" formControlName="password" placeholder="Senha">
-                <button type="submit">Login</button>
+                <!-- <input type="email" formControlName="email" placeholder="Email"> -->
+                <!-- <input type="password" formControlName="password" placeholder="Senha"> -->
+
+                <div class="login-form">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Email</mat-label>
+                        <input matInput formControlName="email" type="email" />
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Password</mat-label>
+                        <input matInput formControlName="password" type="password" />
+                    </mat-form-field>
+
+                    <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+                        Login
+                    </button>
+
+                    <button mat-raised-button color="primary" [disabled]="loading" routerLink="/register">
+                        Register
+                    </button>
+                </div>
             </form>
         </div>
-
-        <button mat-raised-button color="primary" type="submit" [disabled]="loading">
-            Entrar
-        </button>
 
         <div *ngIf="error" style="color: red; margin-top: 10px;">
             {{ error }}
