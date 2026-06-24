@@ -160,13 +160,14 @@ Open `http://localhost:4200` in your browser.
 | PATCH | `/transactions/:id` | Update a transaction and publish it to the update queue |
 | POST | `/transactions/pending/process` | Process pending transactions from both queues |
 
+<!---
 ### Queue Consumer — `transaction-processing-service` (port 3001)
 
 | Method | Endpoint | Description |
 |---|---|---|
 | POST | `/queue-consumer/new-transactions/start-listener` | Start the listener for the new transactions queue |
 | POST | `/queue-consumer/update-transactions/start-listener` | Start the listener for the update transactions queue |
-
+-->
 ---
 
 ## RabbitMQ Management
