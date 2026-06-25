@@ -45,18 +45,21 @@
     </form>
 
     <div *ngIf="qrCodeUrl">
-        <h2>Configure o 2FA</h2>
-        <p>Escaneie este QR Code com seu aplicativo autenticador.</p>
+        <h2>Please configure 2FA</h2>
+        <p>Scan this QR code with your authenticator app and click the button below.</p>
         <qrcode [qrdata]="qrCodeUrl" [width]="256" [errorCorrectionLevel]="'M'"></qrcode>
-        <button (click)="authenticatorAppConfigured()">Já configurei</button>
+        <button mat-raised-button color="primary" (click)="authenticatorAppConfigured()">I have configured my authenticator app</button>
     </div>
 
     <div *ngIf="isTwoFactorEnabled">
-        <h2>Código de Verificação</h2>
-        <p>Por favor, digite o código do seu aplicativo.</p>
+        <h2>Verification Code</h2>
+        <p>Please enter the code from your authenticator app.</p>
         <form [formGroup]="twoFactorForm" (ngSubmit)="onSubmit2FA()">
-            <input type="text" formControlName="code" placeholder="Código 2FA" minlength="6" maxlength="6">
-            <button type="submit">Verificar</button>
+            <mat-form-field appearance="outline" class="full-width">
+                <mat-label>2FA Code</mat-label>
+                <input matInput type="text" formControlName="code" placeholder="2FA code" minlength="6" maxlength="6">
+            </mat-form-field>
+            <button mat-raised-button color="primary" type="submit">Verify</button>
         </form>
     </div>
 </mat-card>
