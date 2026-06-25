@@ -34,4 +34,8 @@ export class TransactionsService {
         console.log(`Fetching transaction with ID: ${id}`);
         return this.http.get<Transaction>(`${this.baseUrl}/${id}`, { withCredentials: true });
     }
+
+    syncTransactions(): Observable<any> {
+        return this.http.post(`${this.baseUrl}/pending/process`, {}, { withCredentials: true });
+    }
 }

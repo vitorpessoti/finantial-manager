@@ -57,6 +57,17 @@ export class TransactionsComponent implements OnInit {
     this.router.navigate([`transactions/${transaction.userId}/edit/${transaction.id}`]);
   }
 
+  syncTransactions(): void {
+    this.transactionsService.syncTransactions().subscribe({
+      next: () => {
+        this.getTransactions();
+      },
+      error: (err: any) => {
+        console.error('Error syncing transactions:', err);
+      }
+    });
+  }
+
   openCreateDialog(): void {
     const dialogRef = this.dialog.open(TransactionEditDialogComponent, {
       width: '400px',
